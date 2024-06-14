@@ -1,0 +1,49 @@
+USE nyc_taxi_discovery;
+
+-- FETCHING SPECIFIC FIELD FROM AN ARRAY TYPE 
+-- SELECT 
+--     CAST(JSON_VALUE(jsonDoc, '$.payment_type') AS SMALLINT) pay_type,
+--     CAST(JSON_VALUE(jsonDoc, '$.payment_type_desc[0].sub_type') AS VARCHAR(15)) sub_type,
+--     CAST(JSON_VALUE(jsonDoc, '$.payment_type_desc[1].value') AS VARCHAR(15)) sub_type_1
+-- FROM
+--     OPENROWSET(
+--         BULK 'raw/payment_type_array.json',
+--         DATA_SOURCE = 'nyc_taxi_data',
+--         FORMAT = 'CSV',
+--         PARSER_VERSION = '1.0',
+--         FIELDQUOTE = '0x0b',
+--         FIELDTERMINATOR = '0x0b', 
+--         ROWTERMINATOR = '0x0a' -- new line
+--     )
+--     WITH (
+--         jsonDoc NVARCHAR(MAX)
+--     )
+--     AS payment_type;
+
+
+
+SELECT pay_type, sub_type, pay_desc_value
+    FROM
+        OPENROWSET(
+            BULK 'raw/payment_type_array.json',
+            DATA_SOURCE = 'nyc_taxi_data',
+            FORMAT = 'CSV',
+            PARSER_VERSION = '1.0',
+            FIELDQUOTE = '0x0b',
+            FIELDTERMINATOR = '0x0b', 
+            ROWTERMINATOR = '0x0a' -- new line
+        )
+        WITH (
+            jsonDoc NVARCHAR(MAX)
+        )
+        AS payment_type
+            CROSS APPLY OPENJSON(jsonDoc)
+                WITH (
+                    pay_type INT '$.payment_type',
+                    payment_type_desc NVARCHAR(MAX) AS JSON
+                )
+                    CROSS APPLY OPENJSON(payment_type_desc) -- EXTRACTING OUT THE VALUES OF ARRAY WITHIN payment_type_desc
+                        WITH (
+                            sub_type SMALLINT,
+                            pay_desc_value VARCHAR(15) '$.value'
+                        )

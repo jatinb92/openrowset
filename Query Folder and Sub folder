@@ -1,0 +1,113 @@
+USE nyc_taxi_discovery;
+
+----------------------------------------------------
+-- Fetch data directly from the file.
+----------------------------------------------------
+SELECT
+    TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_csv/year=2020/month=01/green_tripdata_2020-01.csv',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0'
+    ) AS [result]
+
+
+----------------------------------------------------
+-- Fetch data directly from the similar file types
+----------------------------------------------------
+SELECT
+    TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_csv/year=2020/month=01/*.csv',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        HEADER_ROW = TRUE
+    ) AS [result]
+
+
+
+
+----------------------------------------------------
+-- Fetch data directly from the similar subfolders with filename and filepath
+----------------------------------------------------
+SELECT
+    result.filename() AS filename,
+    result.filepath() AS filepath,
+    COUNT(1) AS file_count
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_csv/year=2020/**',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        HEADER_ROW = TRUE
+    ) AS [result]
+GROUP BY result.filename(), result.filepath()
+ORDER BY result.filename() DESC
+
+
+
+----------------------------------------------------
+-- Fetch data directly from the similar folders and subfolder types
+----------------------------------------------------
+SELECT
+    TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_csv/year=*/month=*/*.csv',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        HEADER_ROW = TRUE
+    ) 
+    WITH (
+        VendorID INT,
+        total FLOAT '$.total_amount'
+    )
+    AS [result]
+
+
+----------------------------------------------------
+-- Fetch data directly from the similar folders and subfolder types with filename and filepath
+----------------------------------------------------
+SELECT
+    result.filename() AS filename,
+    result.filepath() AS filepath,
+    COUNT(1) AS file_count
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_csv/year=*/month=*/*.csv',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        HEADER_ROW = TRUE
+    ) AS [result]
+GROUP BY result.filename(), result.filepath()
+ORDER BY result.filename() DESC
+
+
+----------------------------------------------------
+-- Fetch data directly from the similar folders and subfolder types with selected files only
+----------------------------------------------------
+SELECT
+    result.filename() AS filename,
+    result.filepath() AS filepath,
+    COUNT(1) AS file_count
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_csv/year=*/month=*/*.csv',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        HEADER_ROW = TRUE
+    ) AS [result]
+WHERE result.filename() in ('green_tripdata_2021-03.csv', 'green_tripdata_2020-03.csv', 'green_tripdata_2021-01.csv')
+GROUP BY result.filename(), result.filepath()
+ORDER BY result.filename() DESC
+
+
+

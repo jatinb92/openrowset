@@ -1,0 +1,9 @@
+
+USE nyc_taxi_discovery
+
+CREATE EXTERNAL DATA SOURCE nyc_taxi_data 
+WITH (
+    LOCATION = 'https://datalakesynapse01.dfs.core.windows.net/nyc-taxi-data/'
+)
+
+DROP EXTERNAL DATA SOURCE nyc_taxi_data ;

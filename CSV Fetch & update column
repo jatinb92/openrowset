@@ -1,0 +1,38 @@
+USE nyc_taxi_discovery;
+
+SELECT
+    TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'raw/taxi_zone.csv',
+        DATA_SOURCE = 'nyc_taxi_data', -- USING DATA SOURCE 
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        HEADER_ROW = TRUE,
+        FIELDTERMINATOR = ','
+    ) WITH (
+        LocationID SMALLINT,
+        Borough VARCHAR(20),
+        Zone VARCHAR(50) 
+    ) 
+    AS [result];
+
+
+
+-- IN CASE WE REQUIRE SPECIFIC COLUMNS
+
+
+SELECT
+    TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'https://datalakesynapse01.dfs.core.windows.net/nyc-taxi-data/raw/taxi_zone.csv', -- USING DATALAKE URL
+        FORMAT = 'CSV',
+        PARSER_VERSION = '2.0',
+        FIRSTROW = 2, -- alternate to HEADER_ROW = TRUE,
+        FIELDTERMINATOR = ','
+    ) WITH (
+        Borough VARCHAR(20) 2,
+        Zone VARCHAR(50) 3 
+    ) 
+    AS [result];

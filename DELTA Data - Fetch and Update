@@ -1,0 +1,11 @@
+USE nyc_taxi_discovery;
+
+SELECT
+    TOP 100 *
+FROM
+    OPENROWSET(
+        BULK 'raw/trip_data_green_delta/',
+        DATA_SOURCE = 'nyc_taxi_data', -- USING DATA SOURCE 
+        FORMAT = 'DELTA'
+    ) AS [result];
+

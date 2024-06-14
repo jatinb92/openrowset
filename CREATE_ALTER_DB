@@ -1,0 +1,7 @@
+CREATE DATABASE nyc_taxi_discovery;
+
+USE nyc_taxi_discovery;
+
+ALTER DATABASE nyc_taxi_discovery COLLATE LATIN1_GENERAL_100_CI_AS_SC_UTF8; 
+
+SELECT name, collation_name FROM sys.databases;

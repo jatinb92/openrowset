@@ -1,0 +1,26 @@
+USE nyc_taxi_discovery;
+
+-- This is auto-generated code
+SELECT pay_type, -- providing alias for column name (method 1)
+        payment_type_desc AS pay_type_desc -- providing alias for column name (method 2)
+    -- CAST(JSON_VALUE(jsonDoc, '$.payment_type') AS SMALLINT) pay_type,
+    -- CAST(JSON_VALUE(jsonDoc, '$.payment_type_desc') AS VARCHAR(15)) pay_type_description
+FROM
+    OPENROWSET(
+        BULK 'raw/payment_type.json',
+        DATA_SOURCE = 'nyc_taxi_data',
+        FORMAT = 'CSV',
+        PARSER_VERSION = '1.0',
+        FIELDQUOTE = '0x0b',
+        FIELDTERMINATOR = '0x0b', 
+        ROWTERMINATOR = '0x0a' -- new line
+    )
+    WITH (
+        jsonDoc NVARCHAR(MAX)
+    )
+    AS payment_type
+    CROSS APPLY OPENJSON(jsonDoc)
+    WITH (
+        pay_type INT '$.payment_type',
+        payment_type_desc VARCHAR(25)
+    );
